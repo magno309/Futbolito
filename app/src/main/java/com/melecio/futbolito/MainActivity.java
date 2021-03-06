@@ -7,7 +7,11 @@ import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
 import android.graphics.Point;
+import android.graphics.Rect;
+import android.graphics.RectF;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -19,6 +23,8 @@ import android.view.View;
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener{
 
+    private String contadorS = "0";
+    private String contadorI = "0";
     private float xPos, xAccel, xVel = 0.0f;
     private float yPos, yAccel, yVel = 0.0f;
     private float xMax, yMax;
@@ -101,6 +107,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     private class BallView extends View {
+
+
+
+        Paint paintMarcador = new Paint();
+        Paint paintTexto = new Paint();
+
         public BallView(Context context) {
             super(context);
             Bitmap ballSrc = BitmapFactory.decodeResource(getResources(), R.drawable.ball);
@@ -115,6 +127,22 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         @Override
         protected void onDraw(Canvas canvas) {
+
+
+            paintTexto.setColor(Color.BLACK);
+            paintTexto.setStyle(Paint.Style.FILL);
+            paintTexto.setTextSize(250);
+
+            //Marcador izquierdo
+            canvas.drawText(
+                    contadorS, 10, yMax/2 ,paintTexto
+            );
+
+            //Marcador derecho
+            canvas.drawText(
+                    contadorI, xMax-50, yMax/2 ,paintTexto
+            );
+
             canvas.drawBitmap(porteriaS,395, 0,null);
             canvas.drawBitmap(porteriaI,395, yMax-150,null);
             canvas.drawBitmap(ball, xPos, yPos, null);
