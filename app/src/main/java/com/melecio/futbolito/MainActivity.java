@@ -21,8 +21,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private float xPos, xAccel, xVel = 0.0f;
     private float yPos, yAccel, yVel = 0.0f;
     private float xMax, yMax;
+    private float frameTime = 0.666f;
     private Bitmap ball;
     private SensorManager sensorManager;
+    private Sensor sensorACCELEROMETER;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,26 +37,29 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         Display display = getWindowManager().getDefaultDisplay();
         display.getSize(size);
         xMax = (float) size.x - 100;
-        yMax = (float) size.y - 100;
+        yMax = (float) size.y - 340;
 
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+        sensorACCELEROMETER = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
     }
 
     @Override
-    protected void onStart() {
-        super.onStart();
-        sensorManager.registerListener(this, sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), SensorManager.SENSOR_DELAY_GAME);
+    protected void onResume() {
+        super.onResume();
+        if(sensorACCELEROMETER!=null){
+            sensorManager.registerListener(this, sensorACCELEROMETER, SensorManager.SENSOR_DELAY_GAME);
+        }
     }
 
     @Override
-    protected void onStop() {
-        sensorManager.unregisterListener(this);
-        super.onStop();
+    protected void onPause() {
+        super.onPause();
+        if(sensorACCELEROMETER!=null){
+            sensorManager.unregisterListener(this);
+        }
     }
-
 
     private void updateBall() {
-        float frameTime = 0.666f;
         xVel += (xAccel * frameTime);
         yVel += (yAccel * frameTime);
 
