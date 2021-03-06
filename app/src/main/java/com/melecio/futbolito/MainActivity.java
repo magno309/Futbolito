@@ -13,6 +13,7 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Display;
 import android.view.View;
 
@@ -22,7 +23,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private float yPos, yAccel, yVel = 0.0f;
     private float xMax, yMax;
     private float frameTime = 0.666f;
-    private Bitmap ball;
+    private Bitmap ball, porteriaS, porteriaI;
     private SensorManager sensorManager;
     private Sensor sensorACCELEROMETER;
 
@@ -38,6 +39,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         display.getSize(size);
         xMax = (float) size.x - 100;
         yMax = (float) size.y - 340;
+
+        Log.d("pelota", "Xmax: "+xMax);
+        Log.d("pelota", "Ymax: "+yMax);
 
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         sensorACCELEROMETER = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
@@ -100,15 +104,23 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         public BallView(Context context) {
             super(context);
             Bitmap ballSrc = BitmapFactory.decodeResource(getResources(), R.drawable.ball);
-            final int dstWidth = 100;
-            final int dstHeight = 100;
-            ball = Bitmap.createScaledBitmap(ballSrc, dstWidth, dstHeight, true);
+            final int ballWidth = 100, portWidth=290;
+            final int ballHeight = 100, portHeight=250;
+            ball = Bitmap.createScaledBitmap(ballSrc, ballWidth, ballHeight, true);
+            Bitmap porteriaSrcS = BitmapFactory.decodeResource(getResources(), R.drawable.porteria_s);
+            porteriaS = Bitmap.createScaledBitmap(porteriaSrcS, portWidth, portHeight, true);
+            Bitmap porteriaSrcI = BitmapFactory.decodeResource(getResources(), R.drawable.porteria);
+            porteriaI = Bitmap.createScaledBitmap(porteriaSrcI, portWidth, portHeight, true);
         }
 
         @Override
         protected void onDraw(Canvas canvas) {
+            canvas.drawBitmap(porteriaS,395, 0,null);
+            canvas.drawBitmap(porteriaI,395, yMax-150,null);
             canvas.drawBitmap(ball, xPos, yPos, null);
             invalidate();
+            Log.d("pelota", "Xpos: "+xPos);
+            Log.d("pelota", "Ypos: "+yPos);
         }
     }
 }
