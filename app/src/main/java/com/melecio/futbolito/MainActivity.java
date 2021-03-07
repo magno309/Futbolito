@@ -8,6 +8,8 @@ import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
 import android.graphics.Point;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -20,6 +22,9 @@ import android.view.View;
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener{
 
+
+    private String contadorS = "0";
+    private String contadorI = "0";
     private float xPos, xAccel, xVel = 0.0f;
     private float yPos, yAccel, yVel = 0.0f;
     private float xMax, yMax, portIni, portFin;
@@ -94,10 +99,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             xPos = portFin;
         } else if(!gol && (xPos>portIni && xPos<portFin) && (yPos>yMax+ballHeight-portHeight || yPos<portHeight-ballHeight)){
             gol = true;
-            if(yPos<portHeight-ballHeight)
+            if(yPos<portHeight-ballHeight) {
                 scoreA++;
-            else if(yPos>yMax+ballHeight-portHeight)
+                contadorS = String.valueOf(scoreA);
+            }
+            else if(yPos>yMax+ballHeight-portHeight){
                 scoreB++;
+                contadorI = String.valueOf(scoreB);
+            }
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
             builder.setTitle("¡GOOOOL!").setMessage("Puntaje A: "+scoreA+"\n\nPuntaje B: "+scoreB);
             builder.setPositiveButton("CONTINUAR", (dialog, id) -> {
@@ -109,6 +118,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             builder.setNegativeButton("REINICIAR", (dialog, id) -> {
                 scoreA = 0;
                 scoreB = 0;
+                contadorS = String.valueOf(scoreA);
+                contadorI = String.valueOf(scoreB);
                 dialog.dismiss();
                 xPos = ((xMax+ballWidth)/2)-(ballWidth/2);
                 yPos = ((yMax+ballWidth)/2)-(ballWidth/2);
@@ -140,6 +151,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     private class BallView extends View {
+
+        Paint paintTexto = new Paint();
+
         public BallView(Context context) {
             super(context);
             Bitmap ballSrc = BitmapFactory.decodeResource(getResources(), R.drawable.ball);
@@ -152,6 +166,20 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         @Override
         protected void onDraw(Canvas canvas) {
+
+            //Marcador izquierdo
+            paintTexto.setColor(Color.BLACK);
+            paintTexto.setStyle(Paint.Style.FILL);
+            paintTexto.setTextSize(250);
+            canvas.drawText(
+                    contadorS, 10, yMax/2 ,paintTexto
+            );
+
+            //Marcador derecho
+            canvas.drawText(
+                    contadorI, xMax-50, yMax/2 ,paintTexto
+            );
+
             canvas.drawBitmap(porteriaA, portIni, 0,null);
             canvas.drawBitmap(porteriaB, portIni, yMax+ballHeight-portHeight,null);
             canvas.drawBitmap(ball, xPos, yPos, null);
