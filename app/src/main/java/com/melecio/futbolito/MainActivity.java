@@ -1,5 +1,6 @@
 package com.melecio.futbolito;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Context;
@@ -21,9 +22,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     private float xPos, xAccel, xVel = 0.0f;
     private float yPos, yAccel, yVel = 0.0f;
-    private float xMax, yMax;
+    private float xMax, yMax, portIni, portFin;
     private float frameTime = 0.666f;
-    private Bitmap ball, porteriaS, porteriaI;
+    private final int ballWidth = 100, portWidth=290;
+    private final int ballHeight = 100, portHeight=250;
+    private int scoreA, scoreB = 0;
+    private boolean gol = false;
+    private Bitmap ball, porteriaA, porteriaB;
     private SensorManager sensorManager;
     private Sensor sensorACCELEROMETER;
 
@@ -37,8 +42,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         Point size = new Point();
         Display display = getWindowManager().getDefaultDisplay();
         display.getSize(size);
-        xMax = (float) size.x - 100;
-        yMax = (float) size.y - 340;
+        xMax = (float) size.x - ballWidth;
+        yMax = (float) size.y - ballHeight - 240;
+
+        xPos = ((xMax+ballWidth)/2)-(ballWidth/2);
+        yPos = ((yMax+ballWidth)/2)-(ballWidth/2);
+
+        portIni = ((xMax+ballWidth)/2)-(portWidth/2);
+        portFin = portIni + portWidth;
 
         Log.d("pelota", "Xmax: "+xMax);
         Log.d("pelota", "Ymax: "+yMax);
@@ -77,6 +88,34 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             xPos = xMax;
         } else if (xPos < 0) {
             xPos = 0;
+        } else if((xPos>portIni-ballWidth&&xPos<portIni) && (yPos>yMax-portHeight||yPos<portHeight)){
+            xPos = portIni-ballWidth;
+        } else if((xPos<portFin&&xPos>portFin-50) && (yPos>yMax-portHeight||yPos<portHeight)){
+            xPos = portFin;
+        } else if(!gol && (xPos>portIni && xPos<portFin) && (yPos>yMax+ballHeight-portHeight || yPos<portHeight-ballHeight)){
+            gol = true;
+            if(yPos<portHeight-ballHeight)
+                scoreA++;
+            else if(yPos>yMax+ballHeight-portHeight)
+                scoreB++;
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setTitle("¡GOOOOL!").setMessage("Puntaje A: "+scoreA+"\n\nPuntaje B: "+scoreB);
+            builder.setPositiveButton("CONTINUAR", (dialog, id) -> {
+                dialog.dismiss();
+                xPos = ((xMax+ballWidth)/2)-(ballWidth/2);
+                yPos = ((yMax+ballWidth)/2)-(ballWidth/2);
+                gol = false;
+            });
+            builder.setNegativeButton("REINICIAR", (dialog, id) -> {
+                scoreA = 0;
+                scoreB = 0;
+                dialog.dismiss();
+                xPos = ((xMax+ballWidth)/2)-(ballWidth/2);
+                yPos = ((yMax+ballWidth)/2)-(ballWidth/2);
+                gol = false;
+            });
+            AlertDialog dialog = builder.create();
+            dialog.show();
         }
 
         if (yPos > yMax) {
@@ -88,7 +127,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     @Override
     public void onSensorChanged(SensorEvent sensorEvent) {
-        if (sensorEvent.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
+        if (sensorEvent.sensor.getType() == Sensor.TYPE_ACCELEROMETER && !gol) {
             xAccel = sensorEvent.values[0];
             yAccel = -sensorEvent.values[1];
             updateBall();
@@ -104,19 +143,17 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         public BallView(Context context) {
             super(context);
             Bitmap ballSrc = BitmapFactory.decodeResource(getResources(), R.drawable.ball);
-            final int ballWidth = 100, portWidth=290;
-            final int ballHeight = 100, portHeight=250;
             ball = Bitmap.createScaledBitmap(ballSrc, ballWidth, ballHeight, true);
             Bitmap porteriaSrcS = BitmapFactory.decodeResource(getResources(), R.drawable.porteria_s);
-            porteriaS = Bitmap.createScaledBitmap(porteriaSrcS, portWidth, portHeight, true);
+            porteriaA = Bitmap.createScaledBitmap(porteriaSrcS, portWidth, portHeight, true);
             Bitmap porteriaSrcI = BitmapFactory.decodeResource(getResources(), R.drawable.porteria);
-            porteriaI = Bitmap.createScaledBitmap(porteriaSrcI, portWidth, portHeight, true);
+            porteriaB = Bitmap.createScaledBitmap(porteriaSrcI, portWidth, portHeight, true);
         }
 
         @Override
         protected void onDraw(Canvas canvas) {
-            canvas.drawBitmap(porteriaS,395, 0,null);
-            canvas.drawBitmap(porteriaI,395, yMax-150,null);
+            canvas.drawBitmap(porteriaA, portIni, 0,null);
+            canvas.drawBitmap(porteriaB, portIni, yMax+ballHeight-portHeight,null);
             canvas.drawBitmap(ball, xPos, yPos, null);
             invalidate();
             Log.d("pelota", "Xpos: "+xPos);
